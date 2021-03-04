@@ -16,14 +16,19 @@ board_two = [[0 for i in range(9)] for j in range(9)]
 
 board = [[0 for i in range(9)] for j in range(9)]
 
-with_boost = True
+with_slow = True
+with_clear = False
 
 
 
 def set_text(row, col, number):
+
     board_two[row][col].delete(0, "end")
     board_two[row][col].insert(0, str(number))
-    if with_boost:
+
+
+
+    if with_slow:
         window.update()
         time.sleep(0.0001)
 
@@ -48,6 +53,8 @@ def sudoku_solver():
         return True
 
     for i in range(1, 10):
+        if with_clear:
+            return True
 
         set_text(row, col, i)
 
@@ -107,7 +114,8 @@ def begin():
 
     global board_two
     global board
-
+    global with_clear
+    global with_slow
     for i in range(9):
         for j in range(9):
             cur = board_two[i][j].get()
@@ -115,13 +123,17 @@ def begin():
             if cur != '':
                 board[i][j] = int(cur)
 
+    with_clear = False
+    with_slow = True
     sudoku_solver()
 
 
 def erase():
 
     global board_two
-    global with_boost
+    global with_clear
+
+    with_clear = True
 
     for i in range(9):
         for j in range(9):
@@ -129,12 +141,14 @@ def erase():
             board_two[i][j].insert(0, '')
             board[i][j] = 0
 
-    with_boost = True
+
 
 
 def instant():
-    global with_boost
-    with_boost = False
+    
+    global with_slow
+    with_slow = False
+
 
 #build the layout
 
@@ -152,7 +166,7 @@ def create_grid():
             if j in border_check:
                 right = 5
 
-            box = tkinter.Entry(window, width=2, font=('Arial', 60), bd=1, highlightbackground = rgbtohex(170,38,54), highlightthickness=1)
+            box = tkinter.Entry(window, width=2, font=('Arial', 60), bd=1, highlightbackground = rgbtohex(170,38,54), highlightthickness=1, justify = "center")
             box.grid(row=i, column=j, padx = (left, right), pady =(top, bottom))
             board_two[i][j] = box
 
