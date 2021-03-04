@@ -8,8 +8,8 @@ window.title("Sudoku Solver by Lakvinu")
 def rgbtohex(r,g,b):
     return f'#{r:02x}{g:02x}{b:02x}'
 
-window.configure(background= rgbtohex(40,94,145))
-
+#window.configure(background= rgbtohex(40,94,145))
+window.configure(background=rgbtohex(25,73,114))
 window.resizable(0,0)
 
 board_two = [[0 for i in range(9)] for j in range(9)]
@@ -142,8 +142,8 @@ def create_grid():
 
     for i in range(9):
         for j in range(9):
-            left, right = 1,1
-            top, bottom = 1, 1
+            left, right = 0,0
+            top, bottom = 0,0
             border_check = {2,5,8}
 
             if i in border_check:
@@ -152,8 +152,7 @@ def create_grid():
             if j in border_check:
                 right = 5
 
-
-            box = tkinter.Entry(window, width=2, font=('Arial', 60), bd=3, highlightbackground = rgbtohex(170,38,54), highlightthickness=4)
+            box = tkinter.Entry(window, width=2, font=('Arial', 60), bd=1, highlightbackground = rgbtohex(170,38,54), highlightthickness=1)
             box.grid(row=i, column=j, padx = (left, right), pady =(top, bottom))
             board_two[i][j] = box
 
