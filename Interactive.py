@@ -157,11 +157,11 @@ def create_grid():
             box.grid(row=i, column=j, padx = (left, right), pady =(top, bottom))
             board_two[i][j] = box
 
-    start = tkinter.Button(window, height=1, width=7, text="Start", font=("Arial", 30), command=begin)
+    start = tkinter.Button(window, height=1, width=7, text="Start", font=("Arial", 30), command=begin, bg="white")
 
-    fast = tkinter.Button(window, height=1, width=7, text="Fast", font=("Arial", 30), command=instant)
+    fast = tkinter.Button(window, height=1, width=7, text="Fast", font=("Arial", 30), command=instant, bg="white")
 
-    clear = tkinter.Button(window, height=1, width=7, text="Clear", font=("Arial", 30), command=erase)
+    clear = tkinter.Button(window, height=1, width=7, text="Clear", font=("Arial", 30), command=erase, bg="white")
 
     start.grid(row=3, column=9, padx = 10)
 
