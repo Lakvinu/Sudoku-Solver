@@ -18,19 +18,7 @@ board = [[0 for i in range(9)] for j in range(9)]
 
 with_slow = True
 with_clear = False
-
-
-
-def set_text(row, col, number):
-
-    board_two[row][col].delete(0, "end")
-    board_two[row][col].insert(0, str(number))
-
-
-
-    if with_slow:
-        window.update()
-        time.sleep(0.0001)
+has_started = False
 
 
 def empty_pos():
@@ -42,11 +30,11 @@ def empty_pos():
 
     return None, None
 
-
+cnt = 0
 def sudoku_solver():
     global board_two
-
-
+    global cnt
+    cnt += 1
     row, col = empty_pos()
 
     if row == None or col == None:
@@ -84,6 +72,8 @@ def is_valid(row, col, num):
     for i in range(9):
         if i != col:
             if board[row][i] == num:
+                if not has_started:
+                    return row, i
                 return False
 
     #checking within cols
@@ -91,6 +81,8 @@ def is_valid(row, col, num):
     for i in range(9):
         if i != row:
             if board[i][col] == num:
+                if not has_started:
+                    return i, col
                 return False
 
     #need to check within the current box
@@ -103,6 +95,8 @@ def is_valid(row, col, num):
         for j in range(box_col, box_col + 3):
             if i != row and j != col:
                 if board[i][j] == num:
+                    if not has_started:
+                        return i, j
                     return False
 
     #if no mistakes return True
@@ -112,28 +106,40 @@ def is_valid(row, col, num):
 
 def begin():
 
-    global board_two
     global board
     global with_clear
     global with_slow
+    global has_started
+
+    fast['state'] = 'active'
+
+    """
     for i in range(9):
         for j in range(9):
             cur = board_two[i][j].get()
-
             if cur != '':
                 board[i][j] = int(cur)
+    """
+    if has_started:
+        return
 
+    has_started = True
     with_clear = False
     with_slow = True
+    start['state'] = 'disabled'
     sudoku_solver()
 
 
 def erase():
-
     global board_two
     global with_clear
+    global has_started
+
+    fast['state'] = 'disabled'
+    start['state'] = 'active'
 
     with_clear = True
+    has_started = False
 
     for i in range(9):
         for j in range(9):
@@ -142,47 +148,94 @@ def erase():
             board[i][j] = 0
 
 
-
-
 def instant():
-    
     global with_slow
+    global has_started
+    fast['state'] = 'disabled'
     with_slow = False
 
+def set_text(row, col, number):
+
+    board_two[row][col].delete(0, "end")
+    board_two[row][col].insert(0, str(number))
+
+    if with_slow:
+        window.update()
+        time.sleep(0.0001)
+
+def check_place(i,j,num):
+    board[i][j] = num
+    ans = is_valid(i,j,num)
+
+    if ans == True:
+        board_two[i][j]['bg'] = 'light green'
+    else:
+        board_two[i][j]['bg'] = 'red'
+        board_two[ans[0]][ans[1]]['bg'] = 'red'
+        window.update()
+        time.sleep(0.4)
+        board_two[ans[0]][ans[1]]['bg'] = 'light green'
+
+def next_check(i,j):
+
+    board_two[i][j]['bg'] = "white"
+    num = board[i][j]
+    board[i][j] = 0
+    ans = is_valid(i, j, num)
+
+    if ans != True:
+        board_two[ans[0]][ans[1]]['bg'] = 'light green'
+
+def validate(P,i,j):
+
+    if len(P) == 0:
+        # empty Entry is ok
+        if not has_started:
+            next_check(int(i),int(j))
+
+        return True
+
+    elif len(P) == 1 and P.isdigit():
+        # Entry with 1 digit is ok
+        if not has_started:
+            check_place(int(i),int(j),int(P))
+
+        return True
+
+    else:
+        # Anything else, reject it
+        return False
+
+vcmd = window.register(validate)
 
 #build the layout
+for i in range(9):
+    for j in range(9):
+        left, right = 0,0
+        top, bottom = 0,0
+        border_check = {2,5}
 
-def create_grid():
+        if i in border_check:
+            bottom = 5
 
-    for i in range(9):
-        for j in range(9):
-            left, right = 0,0
-            top, bottom = 0,0
-            border_check = {2,5,8}
+        if j in border_check:
+            right = 5
 
-            if i in border_check:
-                bottom = 5
+        box = tkinter.Entry(window, width=2, font=('Arial', 60), bd=1, highlightbackground = rgbtohex(170,38,54), highlightthickness=1, justify = "center", validate="key", validatecommand=(vcmd,'%P',i,j))
+        box.grid(row=i, column=j, padx = (left, right), pady =(top, bottom))
+        board_two[i][j] = box
 
-            if j in border_check:
-                right = 5
+start = tkinter.Button(window, height=1, width=7, text="Start", font=("Arial", 30), command=begin, bg="white")
 
-            box = tkinter.Entry(window, width=2, font=('Arial', 60), bd=1, highlightbackground = rgbtohex(170,38,54), highlightthickness=1, justify = "center")
-            box.grid(row=i, column=j, padx = (left, right), pady =(top, bottom))
-            board_two[i][j] = box
+fast = tkinter.Button(window, height=1, width=7, text="Fast", font=("Arial", 30), command=instant, bg="white", state="disabled")
 
-    start = tkinter.Button(window, height=1, width=7, text="Start", font=("Arial", 30), command=begin, bg="white")
+clear = tkinter.Button(window, height=1, width=7, text="Clear", font=("Arial", 30), command=erase, bg="white")
 
-    fast = tkinter.Button(window, height=1, width=7, text="Fast", font=("Arial", 30), command=instant, bg="white")
+start.grid(row=3, column=9, padx = 10)
 
-    clear = tkinter.Button(window, height=1, width=7, text="Clear", font=("Arial", 30), command=erase, bg="white")
+clear.grid(row=5, column=9)
 
-    start.grid(row=3, column=9, padx = 10)
+fast.grid(row=4, column=9)
 
-    clear.grid(row=5, column=9)
-
-    fast.grid(row=4, column=9)
-
-
-create_grid()
-
+#end of layout
 window.mainloop()
