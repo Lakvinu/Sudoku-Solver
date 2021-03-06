@@ -1,6 +1,6 @@
 import tkinter
 import time
-
+from tkinter import messagebox
 window = tkinter.Tk()
 window.title("Sudoku Solver by Lakvinu")
 #window.geometry("1050x880")
@@ -30,11 +30,12 @@ def empty_pos():
 
     return None, None
 
+
 cnt = 0
 def sudoku_solver():
     global board_two
     global cnt
-    cnt += 1
+
     row, col = empty_pos()
 
     if row == None or col == None:
@@ -67,14 +68,16 @@ def sudoku_solver():
 
 def is_valid(row, col, num):
 
+    container = []
     #checking within rows
 
     for i in range(9):
         if i != col:
             if board[row][i] == num:
                 if not has_started:
-                    return row, i
-                return False
+                    container.append([row,i])
+                else:
+                    return False
 
     #checking within cols
 
@@ -82,8 +85,9 @@ def is_valid(row, col, num):
         if i != row:
             if board[i][col] == num:
                 if not has_started:
-                    return i, col
-                return False
+                    container.append([i, col])
+                else:
+                    return False
 
     #need to check within the current box
 
@@ -96,10 +100,13 @@ def is_valid(row, col, num):
             if i != row and j != col:
                 if board[i][j] == num:
                     if not has_started:
-                        return i, j
-                    return False
+                        container.append([i,j])
+                    else:
+                        return False
 
     #if no mistakes return True
+    if not has_started:
+        return container
 
     return True
 
@@ -111,7 +118,7 @@ def begin():
     global with_slow
     global has_started
 
-    fast['state'] = 'active'
+
 
     """
     for i in range(9):
@@ -120,9 +127,18 @@ def begin():
             if cur != '':
                 board[i][j] = int(cur)
     """
+
     if has_started:
         return
 
+    for i in range(9):
+        for j in range(9):
+            if board_two[i][j]['bg'] == 'red':
+                messagebox.showinfo("Warning", "Unsolvable Sudoku")
+                return
+
+
+    fast['state'] = 'active'
     has_started = True
     with_clear = False
     with_slow = True
@@ -154,6 +170,7 @@ def instant():
     fast['state'] = 'disabled'
     with_slow = False
 
+
 def set_text(row, col, number):
 
     board_two[row][col].delete(0, "end")
@@ -163,35 +180,45 @@ def set_text(row, col, number):
         window.update()
         time.sleep(0.0001)
 
+
 def check_place(i,j,num):
     board[i][j] = num
+
     ans = is_valid(i,j,num)
 
-    if ans == True:
-        board_two[i][j]['bg'] = 'light green'
-    else:
+    if ans:
         board_two[i][j]['bg'] = 'red'
-        board_two[ans[0]][ans[1]]['bg'] = 'red'
-        window.update()
-        time.sleep(0.4)
-        board_two[ans[0]][ans[1]]['bg'] = 'light green'
+        for k in range(len(ans)):
+            row, col = ans[k][0], ans[k][1]
+            board_two[row][col]['bg'] = 'red'
+
+    else:
+        board_two[i][j]['bg'] = 'light green'
+
 
 def next_check(i,j):
-
-    board_two[i][j]['bg'] = "white"
     num = board[i][j]
     board[i][j] = 0
     ans = is_valid(i, j, num)
+    board_two[i][j]['bg'] = 'white'
 
-    if ans != True:
-        board_two[ans[0]][ans[1]]['bg'] = 'light green'
+    if ans:
+        for k in range(len(ans)):
+            row, col = ans[k][0], ans[k][1]
+
+            res = is_valid(row, col, board[row][col])
+
+            if not res:
+                board_two[row][col]['bg'] = 'light green'
+
+
 
 def validate(P,i,j):
 
     if len(P) == 0:
         # empty Entry is ok
         if not has_started:
-            next_check(int(i),int(j))
+            next_check(int(i), int(j))
 
         return True
 
