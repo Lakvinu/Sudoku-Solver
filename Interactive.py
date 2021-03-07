@@ -19,6 +19,7 @@ board = [[0 for i in range(9)] for j in range(9)]
 with_slow = True
 with_clear = False
 has_started = False
+begin_instant = 0
 
 
 def empty_pos():
@@ -32,15 +33,24 @@ def empty_pos():
 
 
 cnt = 0
+check_fail = []
+
 def sudoku_solver():
     global board_two
     global cnt
+    global check_fail
+
+    if cnt > 500:
+        erase()
+        messagebox.showinfo("Warning", "Unsolvable Sudoku")
+        return True
 
     row, col = empty_pos()
 
     if row == None or col == None:
         return True
-
+    check_fail.append([cnt, (row, col)])
+    cnt += 1
     for i in range(1, 10):
         if with_clear:
             return True
@@ -61,6 +71,10 @@ def sudoku_solver():
             else:
 
                 board[row][col] = 0
+
+    if check_fail[0] == [0, (row,col)]:
+        erase()
+        messagebox.showinfo("Warning", "Unsolvable Sudoku")
 
     return False
 
@@ -117,8 +131,8 @@ def begin():
     global with_clear
     global with_slow
     global has_started
-
-
+    global check_fail
+    global cnt
 
     """
     for i in range(9):
@@ -134,6 +148,7 @@ def begin():
     for i in range(9):
         for j in range(9):
             if board_two[i][j]['bg'] == 'red':
+                print("hi")
                 messagebox.showinfo("Warning", "Unsolvable Sudoku")
                 return
 
@@ -143,6 +158,8 @@ def begin():
     with_clear = False
     with_slow = True
     start['state'] = 'disabled'
+    check_fail = []
+    cnt = 0
     sudoku_solver()
 
 
@@ -167,9 +184,10 @@ def erase():
 def instant():
     global with_slow
     global has_started
+    global begin_instant
     fast['state'] = 'disabled'
     with_slow = False
-
+    begin_instant = time.perf_counter()
 
 def set_text(row, col, number):
 
@@ -222,7 +240,7 @@ def validate(P,i,j):
 
         return True
 
-    elif len(P) == 1 and P.isdigit():
+    elif len(P) == 1 and P.isdigit() and P != '0':
         # Entry with 1 digit is ok
         if not has_started:
             check_place(int(i),int(j),int(P))
